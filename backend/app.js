@@ -3,6 +3,8 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 require('dotenv').config({path: '../.env'});
 
+const userRoutes = require('./routes/user');
+
 const app = express();
 
 mongoose.connect(`mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@cluster0.r7njzsc.mongodb.net/?retryWrites=true&w=majority`)
@@ -22,6 +24,8 @@ app.use((req, res, next) => {
 });
 
 app.use(bodyParser.json());
+
+app.use('/api/auth', userRoutes);
 
 app.use((req, res) => {
     res.json({ message: 'Your request was successful' }); 

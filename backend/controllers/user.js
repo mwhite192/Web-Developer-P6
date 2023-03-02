@@ -3,10 +3,12 @@ const User = require('../models/user');
 
 exports.signup = (req, res, next) => {
   bcrypt.hash(req.body.password, 10).then((hash) => {
+    console.log(hash);
     const user = new User({
       email: req.body.email,
       password: hash,
     });
+    console.log(user);
     user
       .save()
       .then(() => {
@@ -16,11 +18,15 @@ exports.signup = (req, res, next) => {
       })
       .catch((error) => {
         res.status(500).json({
-          error: console.error,
+          error: error,
         });
-      });
+      })
+  }).catch((error) => {
+    res.status(500).json({
+      error: error,
+    });
   });
-};
+}
 
 exports.login = (req, res, next) => {
   User.findOne({ email: req.body.email })

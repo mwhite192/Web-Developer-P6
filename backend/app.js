@@ -30,8 +30,5 @@ app.use(bodyParser.json());
 app.use('/api/sauces', sauceRoutes);
 app.use('/api/auth', userRoutes);
 
-app.use((req, res) => {
-    res.json({ message: 'Your request was successful' }); 
- });
 
 module.exports = app;

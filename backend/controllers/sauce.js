@@ -1,40 +1,42 @@
 const Sauce = require('../models/Sauce');
 
 
-
 exports.createSauce = (req, res, next) => {
-  const url = req.protocol + "://" + req.get("host");
-  const File = url + "/images/" + req.file.filename;
+  const url = req.protocol + '://' + req.get('host');
   req.body.sauce = JSON.parse(req.body.sauce);
   const sauce = new Sauce({
-    sauce: String,
-    image: File,
+    ...req.body.sauce,
+    userId: req.body.userId,  
+    likes: 0, 
+    dislikes: 0, 
+    usersLiked: [],
+    usersDisliked: [],
+    imageUrl: url + '/images/' + req.file.filename,
   });
   sauce
-    .save()
-    .then(() => {
-      res.status(201).json({
-        message: "Sauce added successfully!",
-      });
-    })
-    .catch((error) => {
-      res.status(400).json({
-        error: error,
-      });
+  .save()
+  .then(() => {
+    res.status(201).json({
+      message: 'Sauce added successfully!',
     });
+  })
+  .catch((error) => {
+    res.status(400).json({
+      error: error,
+    });
+  });
 };
-
   exports.getAllSauces = (req, res, next) => {
-    Sauce.find()
-      .then((sauces) => {
-        res.status(200).json(sauces);
-      })
-      .catch((error) => {
-        res.status(400).json({
-          error: error,
+      Sauce.find()
+        .then((sauces) => {
+          res.status(200).json(sauces);
+        })
+        .catch((error) => {
+          res.status(400).json({
+            error: error,
+          });
         });
-      });
-  };
+    };
 
 
 exports.getOneSauce = (req, res, next) => {
@@ -52,21 +54,32 @@ exports.getOneSauce = (req, res, next) => {
 };
 
 exports.updateSauce = (req, res, next) => {
-  const url = req.protocol + '://' + req.get('host');
-  const File = url + '/images/' + req.file.filename;
-  const sauce = new Sauce({
+  Sauce.findOne({
     _id: req.params.id,
-    sauce: String,
-    image: File,
-  });
-  Sauce.updateOne({ _id: req.params.id }, sauce)
-    .then(() => {
-      res.status(201).json({
-        message: 'Sauce updated successfully!',
-      });
+  })
+    .then((sauce) => {
+      const url = req.protocol + "://" + req.get("host");
+      const newSauce = {
+        ...sauce,
+        ...req.body,
+      };
+      if (req.file) {
+        newSauce.imageUrl = url + "/images/" + req.file.filename;
+      }
+      Sauce.updateOne({ _id: req.params.id }, newSauce)
+        .then(() => {
+          res.status(201).json({
+            message: "Sauce updated successfully!",
+          });
+        })
+        .catch((error) => {
+          res.status(400).json({
+            error: error,
+          });
+        });
     })
     .catch((error) => {
-      res.status(400).json({
+      res.status(404).json({
         error: error,
       });
     });

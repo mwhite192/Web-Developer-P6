@@ -29,6 +29,7 @@ export class SingleSauceComponent implements OnInit {
     this.userId = this.auth.getUserId();
     this.loading = true;
     this.userId = this.auth.getUserId();
+    console.log(this.userId);
     this.sauce$ = this.route.params.pipe(
       map(params => params['id']),
       switchMap(id => this.sauces.getSauceById(id)),

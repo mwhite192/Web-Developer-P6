@@ -6,7 +6,7 @@ exports.createSauce = (req, res, next) => {
   req.body.sauce = JSON.parse(req.body.sauce);
   const sauce = new Sauce({
     ...req.body.sauce,
-    userId: req.body.userId,  
+    userId: req.body.sauce.userId,  
     likes: 0, 
     dislikes: 0, 
     usersLiked: [],
@@ -26,17 +26,18 @@ exports.createSauce = (req, res, next) => {
     });
   });
 };
-  exports.getAllSauces = (req, res, next) => {
-      Sauce.find()
-        .then((sauces) => {
-          res.status(200).json(sauces);
-        })
-        .catch((error) => {
-          res.status(400).json({
-            error: error,
-          });
-        });
-    };
+
+exports.getAllSauces = (req, res, next) => {
+  Sauce.find()
+    .then((sauces) => {
+      res.status(200).json(sauces);
+    })
+    .catch((error) => {
+      res.status(400).json({
+        error: error,
+      });
+    });
+};
 
 
 exports.getOneSauce = (req, res, next) => {
@@ -54,36 +55,31 @@ exports.getOneSauce = (req, res, next) => {
 };
 
 exports.updateSauce = (req, res, next) => {
-  Sauce.findOne({
+  const url = req.protocol + '://' + req.get('host');
+  const sauce = new Sauce({
     _id: req.params.id,
-  })
-    .then((sauce) => {
-      const url = req.protocol + "://" + req.get("host");
-      const newSauce = {
-        ...sauce,
-        ...req.body,
-      };
-      if (req.file) {
-        newSauce.imageUrl = url + "/images/" + req.file.filename;
-      }
-      Sauce.updateOne({ _id: req.params.id }, newSauce)
-        .then(() => {
-          res.status(201).json({
-            message: "Sauce updated successfully!",
-          });
-        })
-        .catch((error) => {
-          res.status(400).json({
-            error: error,
-          });
-        });
+    name: req.body.name,
+    description: req.body.description,
+    heat: req.body.price,
+    mainPepper: req.body.mainPepper,
+    manufacturer: req.body.manufacturer,
+  });
+  if (req.file) {
+    sauce.imageUrl = url + '/images/' + req.file.filename;
+  }
+  Sauce.updateOne({ _id: req.params.id }, sauce)
+    .then(() => {
+      res.status(201).json({
+        message: 'Sauce updated successfully!',
+      });
     })
     .catch((error) => {
-      res.status(404).json({
+      res.status(400).json({
         error: error,
       });
     });
 };
+
 
 exports.deleteSauce = (req, res, next) => {
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
@@ -111,3 +107,8 @@ exports.deleteSauce = (req, res, next) => {
   });
 };
     
+
+
+
+
+

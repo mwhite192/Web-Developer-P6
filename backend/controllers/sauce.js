@@ -61,11 +61,11 @@ exports.updateSauce = (req, res, next) => {
   const sauce = new Sauce({
     _id: req.params.id,
     name: req.body.name,
-    // imageUrl: req.body.imageUrl,
+    imageUrl: req.body.imageUrl,
     description: req.body.description,
-    heat: req.body.price,
     mainPepper: req.body.mainPepper,
     manufacturer: req.body.manufacturer,
+    heat: req.body.heat,
   });
   if (req.file) {
     sauce.imageUrl = url + '/images/' + req.file.filename;
@@ -111,27 +111,59 @@ exports.deleteSauce = (req, res, next) => {
 };
 
 exports.likeSauce = (req, res, next) => {
-  const like = req.body.like;
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
-    if (like === 1 && !sauce.usersLiked.includes(req.body.userId)) {
-      sauce.usersLiked.push(req.body.userId);
-      sauce.likes++;
-      Sauce.updateOne({ _id: req.params.id }, sauce)
-        .then(() => {
-          res.status(201).json({
-            message: 'Sauce liked successfully!',
-          });
-        })
-      }else{
-        return res.status(403).json({
-          error: new Error('You already liked this sauce!'),
-      })
-          .catch((error) => {
-            res.status(400).json({
-              error: error,
+    const like = req.body.like;
+    switch (like) {
+      case 1:
+        if (!sauce.usersLiked.includes(req.body.userId)) {
+          sauce.usersLiked.push(req.body.userId);
+          sauce.likes++;
+          Sauce.updateOne({ _id: req.params.id }, sauce).then(() => {
+            res.status(201).json({
+              message: "Sauce liked successfully!",
             });
           });
-      }
+        } else {
+          res.status(200).json({
+            message: "You already liked this sauce!",
+          });
+        }
+        break;
+      case 0:
+          if (sauce.usersLiked.includes(req.body.userId)) {
+            sauce.usersLiked.pull(req.body.userId);
+            sauce.likes--;
+            // sauce.usersDisliked.pull(req.body.userId);
+            // sauce.dislikes--;
+            Sauce.updateOne({ _id: req.params.id }, sauce).then(() => {
+              res.status(201).json({
+                message: "Sauce unliked successfully!",
+              });
+            });
+          } else {
+            res.status(200).json({
+              message: "You already unliked this sauce!",
+            });
+          }
+          break;
+      case -1:
+        if (!sauce.usersDisliked.includes(req.body.userId)) {
+          sauce.usersDisliked.push(req.body.userId);
+          sauce.dislikes++;
+          Sauce.updateOne({ _id: req.params.id }, sauce).then(() => {
+            res.status(201).json({
+              message: "Sauce disliked successfully!",
+            });
+          });
+        } else {
+          res.status(200).json({
+            message: "You already disliked this sauce!",
+          });
+        }
+        break;
+    }
   });
-}; 
+};
+
+
     

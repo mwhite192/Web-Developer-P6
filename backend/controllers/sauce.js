@@ -1,8 +1,12 @@
+// Description: This file contains the logic for the sauce routes
+// sets up the sauce model
 const Sauce = require('../models/Sauce');
 
-
+// creates a new sauce
 exports.createSauce = (req, res, next) => {
+  // sets the url
   const url = req.protocol + '://' + req.get('host');
+  // sets the sauce
   req.body.sauce = JSON.parse(req.body.sauce);
   const sauce = new Sauce({
     ...req.body.sauce,
@@ -13,6 +17,7 @@ exports.createSauce = (req, res, next) => {
     usersDisliked: [],
     imageUrl: url + '/images/' + req.file.filename,
   });
+  // saves the sauce
   sauce
   .save()
   .then(() => {
@@ -27,9 +32,11 @@ exports.createSauce = (req, res, next) => {
   });
 };
 
-
+// gets all the sauces
 exports.getAllSauces = (req, res, next) => {
+  // finds all the sauces
   Sauce.find()
+  // returns the sauces
     .then((sauces) => {
       res.status(200).json(sauces);
     })
@@ -40,11 +47,13 @@ exports.getAllSauces = (req, res, next) => {
     });
 };
 
-
+// gets a single sauce
 exports.getOneSauce = (req, res, next) => {
+  // finds the sauce by id
   Sauce.findOne({
     _id: req.params.id,
   })
+  // returns the sauce
     .then((sauce) => {
       res.status(200).json(sauce);
     })
@@ -55,9 +64,11 @@ exports.getOneSauce = (req, res, next) => {
     });
 };
 
-
+// updates a sauce
 exports.updateSauce = (req, res, next) => {
+  // sets the url
   const url = req.protocol + '://' + req.get('host');
+  // sets the sauce
   const sauce = new Sauce({
     _id: req.params.id,
     name: req.body.name,
@@ -67,10 +78,14 @@ exports.updateSauce = (req, res, next) => {
     manufacturer: req.body.manufacturer,
     heat: req.body.heat,
   });
+  // checks if there is a file
   if (req.file) {
+    // sets the sauce image url
     sauce.imageUrl = url + '/images/' + req.file.filename;
   }
+  // updates the sauce
   Sauce.updateOne({ _id: req.params.id }, sauce)
+  // returns the sauce
     .then(() => {
       res.status(201).json({
         message: 'Sauce updated successfully!',
@@ -83,21 +98,27 @@ exports.updateSauce = (req, res, next) => {
     });
 };
 
-
+// deletes a sauce
 exports.deleteSauce = (req, res, next) => {
+  // finds the sauce by id
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
+    // checks if the sauce exists
     if (!sauce) {
+      // returns an error
       return res.status(404).json({
         error: new Error('Sauce not found!'),
       });
     }
+    // checks if the user is authorized
     if (sauce.userId !== req.auth.userId) {
       return res.status(403).json({
         error: new Error('Unauthorized request!'),
       });
     }
+    // deletes the sauce
     Sauce.deleteOne({ _id: req.params.id })
       .then(() => {
+        // returns the message
         res.status(200).json({
           message: 'Sauce deleted successfully!',
         });
@@ -110,15 +131,23 @@ exports.deleteSauce = (req, res, next) => {
   });
 };
 
+// likes a sauce
 exports.likeSauce = (req, res, next) => {
+  // finds the sauce by id
   Sauce.findOne({ _id: req.params.id }).then((sauce) => {
     const like = req.body.like;
     switch (like) {
+      // case 1: user likes the sauce
       case 1:
+        // checks if the user has already liked the sauce
         if (!sauce.usersLiked.includes(req.body.userId)) {
+          // adds the user to the usersLiked array
           sauce.usersLiked.push(req.body.userId);
+          // increments the likes
           sauce.likes++;
+          // updates the sauce
           Sauce.updateOne({ _id: req.params.id }, sauce).then(() => {
+            // returns the message
             res.status(201).json({
               message: "Sauce liked successfully!",
             });
@@ -129,13 +158,17 @@ exports.likeSauce = (req, res, next) => {
           });
         }
         break;
+        // case 0: user unlikes the sauce
       case 0:
+          // checks if the user has already liked the sauce
           if (sauce.usersLiked.includes(req.body.userId)) {
+            // removes the user from the usersLiked array
             sauce.usersLiked.pull(req.body.userId);
+            // decrements the likes
             sauce.likes--;
-            // sauce.usersDisliked.pull(req.body.userId);
-            // sauce.dislikes--;
+            // updates the sauce
             Sauce.updateOne({ _id: req.params.id }, sauce).then(() => {
+              // returns the message
               res.status(201).json({
                 message: "Sauce unliked successfully!",
               });
@@ -146,11 +179,17 @@ exports.likeSauce = (req, res, next) => {
             });
           }
           break;
+      // case -1: user dislikes the sauce
       case -1:
+        // checks if the user has already disliked the sauce
         if (!sauce.usersDisliked.includes(req.body.userId)) {
+          // adds the user to the usersDisliked array
           sauce.usersDisliked.push(req.body.userId);
+          // increments the dislikes
           sauce.dislikes++;
+          // updates the sauce
           Sauce.updateOne({ _id: req.params.id }, sauce).then(() => {
+            // returns the message
             res.status(201).json({
               message: "Sauce disliked successfully!",
             });

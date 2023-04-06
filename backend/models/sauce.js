@@ -1,5 +1,7 @@
+// set up mongoose
 const mongoose = require('mongoose');
 
+// sets the schema for the sauce
 const sauceSchema = mongoose.Schema({
     userId: String,  
     name: String, 
@@ -14,4 +16,5 @@ const sauceSchema = mongoose.Schema({
     usersDisliked: [String]
 });
 
+// exports the sauce model
 module.exports = mongoose.model('Sauce', sauceSchema);
